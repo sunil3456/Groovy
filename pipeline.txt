@@ -1,0 +1,21 @@
+node {
+    stage('scm checkout') { 
+        git credentialsId: 'git', url: 'https://github.com/sunil3456/openmrs-core.git'
+     }
+      stage('mvnpackage') {
+        def mvnHome = tool name: 'mvn', type: 'maven'
+        def mvnCMD = "${mvnHome}/bin/mvn"
+        sh "${mvnCMD} package"
+   }
+   stage('build docker image') {
+       sh 'docker build -t sunil3456/openmrs-core'
+   }
+   stage('push docker image') {
+       withCredentials([string(credentialsId: 'dockeruser', variable: 'dockerlogin')]) {
+          sh "docker login -u sunil3456 -p ${dockerlogin}"    
+        }
+        sh 'docker push sunil3456/openmrs-core'
+   }
+  }
+
+
