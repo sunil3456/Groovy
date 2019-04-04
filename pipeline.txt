@@ -1,6 +1,6 @@
 node {
     stage('scm checkout') { 
-        git credentialsId: 'git', url: 'https://github.com/sunil3456/openmrs-core.git'
+        git credentialsId: 'github', url: 'https://github.com/sunil3456/openmrs-core.git'
      }
       stage('mvnpackage') {
         def mvnHome = tool name: 'mvn', type: 'maven'
@@ -16,6 +16,6 @@ node {
         }
         sh 'docker push sunil3456/openmrs-core'
    }
-  }
+  
 
 
