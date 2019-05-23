@@ -1,0 +1,71 @@
+# Tag Github repo with version prefix from version.txt and server 
+patch + 1
+prefix=$(cat ${TRAVIS_BUILD_DIR}/version.txt)
+latest_tag=$(git ls-remote --tags origin | cut -f 3 -d '/' | grep 
+"^${prefix}" | sort -t. -k 3,3nr | head -1)
+if [ -z ${latest_tag} ]; then
+  VERSION_TAG="${prefix}.0"
+else
+  VERSION_TAG="${latest_tag%.*}.$((${latest_tag##*.}+1))"
+fi
+git tag ${VERSION_TAG}
+git push --tags
+################################################
+import jenkins.model.Jenkins
+import hudson.model.*
+
+def jenkins = Jenkins.getInstance()
+def jobName = "yourJobName"
+String versionType = "minor"
+def job = jenkins.getItem(jobName)
+
+//get the current version parameter and update its default value
+paramsDef = job.getProperty(ParametersDefinitionProperty.class)
+if (paramsDef) {
+   paramsDef.parameterDefinitions.each{
+       if("version".equals(it.name)){
+           println "Current version is ${it.defaultValue}"
+           it.defaultValue = getUpdatedVersion(versionType, it.defaultValue)
+           println "Next version is ${it.defaultValue}"
+       }
+   }
+}
+
+//determine the next version by the required type 
+//and incrementing the current version
+
+def getUpdatedVersion(String versionType, String currentVersion){
+
+    def split = currentVersion.split('\\.')
+    switch (versionType){
+        case "minor.minor":
+            split[2]=++Integer.parseInt(split[2])
+            break
+        case "minor":
+            split[1]=++Integer.parseInt(split[1])
+            break;
+        case "major":
+           split[0]=++Integer.parseInt(split[0])
+           break;
+    }
+    return split.join('.')
+}
+###########################################
+
+pipeline {
+    agent any
+    tools {
+        maven 'Maven 3.6.0'
+    }
+    stages {
+        stage('Change Version') {
+            steps {
+                sh 'mvn build-helper:parse-version versions:set -DnewVersion=\\${parsedVersion.majorVersion}.\\${parsedVersion.minorVersion}.\\${parsedVersion.nextIncrementalVersion}'
+                sh "mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion}"
+            }
+        }
+    }
+}
+
+
+
