@@ -1,1 +1,31 @@
-echo $(PWD)
+# Declarative is from jenkinsfile 
+
+pipeline  {
+  agent any label
+  stages  {
+stage('scm')  {
+steps  {
+    git 'http://githubaccount/project'
+    }
+}
+
+    stage('build')  {
+    steps  {
+        withMave(maven : 'mymaven')  {
+        bat "mvn clean install"
+    } 
+    }
+}
+    stage('junit')  {
+    steps  {
+        junit healthScaleFactor:10.0, '**/gameoflife-web/target/surefire-reports/*.xml'
+        }
+}
+    stage('deploy')  {
+    steps  {
+        bat 'copy "C:\\programe Files (x86)\\Jenkins\\workspace\\project\\gameoflife\\target\\*.war" "C:\\programe Files\\Apache Software\\targetfolder"'
+	}
+}
+}
+}
+
