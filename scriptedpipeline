@@ -1,4 +1,4 @@
-
+# Scripted is used to run from Jenkin server 
 node {
 
   stage('scm') {
