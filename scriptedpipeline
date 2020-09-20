@@ -1,4 +1,34 @@
 
+node {
+
+  stage('scm') {
+  git 'http://githubaccount/project'
+  }
+  stage('build') {
+  def mvnhome =tool name: 'mymaven', type: 'maven'
+  bat "$(mvnhome)\\bin\\mvn clean install"
+  }
+  stage('junit') {
+  junit healthscaleFactor: 10.0, testResults: '**/gameoflife-web/target/surefire-reports/*.xml
+  }
+  stage('deploy')  {
+  bat 'copy "C:\\Program Files (x86)\\Jenkins\\Workspace\\projectname\\gameoflife-web\\target'
+  }
+}
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
 
 
 
